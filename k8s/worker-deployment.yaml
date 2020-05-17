@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: worker  # This is a key value pair which can be anything (partOfApp: Api also) 
+  template:
+    metadata:
+      labels:
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: stephengrider/multi-worker
+          env:
+            - name: REDIS_HOST # somewhat like the ip or here say cluster IP
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+
+
+# No port is required in this case, no need of service as it doesnt talk to any other micro-service
+
+# Can be used to pass environment variables

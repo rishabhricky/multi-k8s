@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      volumes:
+        - name: postgres-storage # name of the volume
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim # name of PVC config created to use
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432 # Port to open and mapped up to multiclient image
+          volumeMounts:
+            - name: postgres-storage # Go ousiide containers and look for volume with this name
+              mountPath: /var/lib/postgresql/data # Backup this folder from postgres, Continuously add this folder data to PVC
+              subPath: postgres # data stored inside PVC should be in a folder with this name
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword # name of the secret created by using kubectl command to create secret
+                  key: POSTGRES_PASSWORD # key used while creating secret from above command                                 
